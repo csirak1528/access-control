@@ -4,16 +4,13 @@ pragma solidity ^0.8.0;
 import "./Types.sol";
 
 contract AccessControl {
-    mapping(address => bool) private owners;
-    mapping(opcode => contractAddress[]) private opcodesToActions;
-    mapping(string => dataObject) private dataStore;
-    address private opcodeContract;
+    mapping(opcode => address[]) private opcodesToActions;
+    address public executionContract;
     mapping(address => mapping(opcode => uint256)) private userAccessControl;
 
-    //helpers
-    
-
-    function storeData(string memory key, dataObject calldata data) internal {
-        dataStore[key] = data;
+    function verifyCode(opcode code, address user) public view returns (bool) {
+        uint256 contractPosition = userAccessControl[user][code];
+        require(contractPosition > 0);
+        return opcodesToActions[code][contractPosition] == address(0);
     }
 }
