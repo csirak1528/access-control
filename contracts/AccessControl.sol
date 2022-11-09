@@ -5,8 +5,8 @@ import "./Filter.sol";
 import "./Operations/TransferETH.sol";
 
 contract AccessControl {
-    mapping(opcode => address[]) private opcodesToActions;
-    mapping(address => mapping(opcode => uint256)) private userAccessControl;
+    mapping(uint256 => address[]) private opcodesToActions;
+    mapping(address => mapping(uint256 => uint256)) private userAccessControl;
     mapping(address => mapping(string => dataObject)) internal dataStore;
     mapping(address => bool) internal dataAccess;
     mapping(address => bool) private owners;
@@ -19,7 +19,7 @@ contract AccessControl {
     }
 
     //Verify User access to operation
-    function verifyCode(opcode code, address user)
+    function verifyCode(uint256 code, address user)
         public
         view
         returns (address)
@@ -43,7 +43,7 @@ contract AccessControl {
     function storeData(
         address user,
         string memory key,
-        dataObject data
+        dataObject memory data
     ) public {
         require(dataAccess[msg.sender]);
         dataStore[user][key] = data;
@@ -53,21 +53,21 @@ contract AccessControl {
 
     //Sample Request and Execution of Eth Transfer
     //START
-    function requestTransferEth(transactionAttributes calldata attr) public {
-        attr.sender = msg.sender;
-        
+    function requestTransferEth(transactionAttributes memory attrs) public {
+        attrs.sender = msg.sender;
+
         Operation operation = new TransferETH(attrs);
-        address filterAddr = verifyCode(operation.code, msg.sender);
+        address filterAddr = verifyCode(operation.getCode(), msg.sender);
 
         require(filterAddr != address(0));
         Filter filter = Filter(filterAddr);
 
         require(filter.validate(operation.getAllAttributes().transaction));
+        transactionFilter memory transaction = filter.filters();
 
         executeTransferEth(
             operation.getAllAttributes().transaction,
-            filter.filters.transaction.balanceBased,
-            msg.sender
+            transaction.balanceBased
         );
     }
 
@@ -77,19 +77,18 @@ contract AccessControl {
     ) private {
         payable(transcationData.to).transfer(transcationData.amount);
         if (balanceBased) {
-            uint256 curBalance = queryData(transcationData.sender, "balance");
-            storeData(
-                transcationData.sender,
-                "balance",
-                curBalance - transcationData.amount
-            );
+            dataObject memory storedInfo;
+            storedInfo.balance =
+                queryData(transcationData.sender, "balance").balance -
+                transcationData.amount;
+            storeData(transcationData.sender, "balance", storedInfo);
         }
     }
 
     //END
 
     //Add New Filters
-    function addFilter(opcode code, address newAddr) public {
+    function addFilter(uint256 code, address newAddr) public {
         require(owners[msg.sender]);
         dataAccess[newAddr] = true;
         opcodesToActions[code].push(newAddr);
@@ -98,7 +97,7 @@ contract AccessControl {
     //Link Users To Filters
 
     function linkUser(
-        opcode code,
+        uint256 code,
         address user,
         uint256 level
     ) public {

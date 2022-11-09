@@ -7,7 +7,11 @@ pragma solidity ^0.8.0;
 import "../Operation.sol";
 
 contract TransferETH is Operation {
-    uint256 public code = uint256(sha256("TransferETH"));
+    uint256 private code = uint256(sha256("TransferETH"));
+
+    function getCode() public view override returns (uint256) {
+        return code;
+    }
 
     transactionAttributes attributes;
 

@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "../Filter.sol";
 
 contract TransferETHFilter is Filter {
-    filterObject filters;
     address parentControl;
 
     // constructor(address exectuor, address control) {
@@ -12,8 +11,10 @@ contract TransferETHFilter is Filter {
     //     parentControl = control;
     // }
 
-    constructor(filterObject memory filter) public {
-        filters = filter;
+    constructor(transactionFilter memory filter, address control) {
+        filterObject memory temp;
+        temp.transaction = filter;
+        filters = temp;
         parentControl = control;
     }
 
@@ -25,7 +26,7 @@ contract TransferETHFilter is Filter {
         }
     }
 
-    function validate(transactionAttributes transaction)
+    function validate(transactionAttributes memory transaction)
         public
         view
         override
@@ -36,17 +37,18 @@ contract TransferETHFilter is Filter {
             return false;
         }
         if (mainFilter.balanceBased) {
-            uint256 balance = AccessControl(parentControl).queryData(
-                transaction.sender,
-                "balance"
-            );
+            uint256 balance = AccessControl(parentControl)
+                .queryData(transaction.sender, "balance")
+                .balance;
             if (balance - transaction.amount < 0) {
                 return false;
             }
         }
-        for (uint256 i = 0; i < mainFilter.allowedRecievers.length; i++) {
-            if (mainFilter.allowedRecievers[i] == transaction.to) {
-                return true;
+        if (!mainFilter.sendall) {
+            for (uint256 i = 0; i < mainFilter.allowedRecievers.length; i++) {
+                if (mainFilter.allowedRecievers[i] == transaction.to) {
+                    return true;
+                }
             }
         }
         return false;

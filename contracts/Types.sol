@@ -29,5 +29,4 @@ struct filterObject{
     transactionFilter transaction;
 }
 
-type opcode is uint256;
 type contractAddress is address;
