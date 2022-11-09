@@ -54,17 +54,36 @@ contract AccessControl {
     //Sample Request and Execution of Eth Transfer
     //START
     function requestTransferEth(transactionAttributes calldata attr) public {
+        attr.sender = msg.sender;
+        
         Operation operation = new TransferETH(attrs);
         address filterAddr = verifyCode(operation.code, msg.sender);
+
+        require(filterAddr != address(0));
         Filter filter = Filter(filterAddr);
+
         require(filter.validate(operation.getAllAttributes().transaction));
-        executeTransferEth(operation.getAllAttributes().transaction);
+
+        executeTransferEth(
+            operation.getAllAttributes().transaction,
+            filter.filters.transaction.balanceBased,
+            msg.sender
+        );
     }
 
-    function executeTransferEth(transactionAttributes memory transcationData)
-        private
-    {
+    function executeTransferEth(
+        transactionAttributes memory transcationData,
+        bool balanceBased
+    ) private {
         payable(transcationData.to).transfer(transcationData.amount);
+        if (balanceBased) {
+            uint256 curBalance = queryData(transcationData.sender, "balance");
+            storeData(
+                transcationData.sender,
+                "balance",
+                curBalance - transcationData.amount
+            );
+        }
     }
 
     //END

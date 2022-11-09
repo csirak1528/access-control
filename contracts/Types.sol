@@ -10,6 +10,7 @@ struct transactionAttributes{
     address to;
     uint256 amount;
     uint256 timestamp;
+    address sender;
 }
 
 struct attributeObject{
@@ -20,6 +21,7 @@ struct transactionFilter{
     uint256 amountPerTransaction;
     bool balanceBased;
     uint256 balance;
+    bool sendall;
     address[] allowedRecievers;
 }
 

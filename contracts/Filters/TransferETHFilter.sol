@@ -35,6 +35,15 @@ contract TransferETHFilter is Filter {
         if (!(mainFilter.amountPerTransaction >= transaction.amount)) {
             return false;
         }
+        if (mainFilter.balanceBased) {
+            uint256 balance = AccessControl(parentControl).queryData(
+                transaction.sender,
+                "balance"
+            );
+            if (balance - transaction.amount < 0) {
+                return false;
+            }
+        }
         for (uint256 i = 0; i < mainFilter.allowedRecievers.length; i++) {
             if (mainFilter.allowedRecievers[i] == transaction.to) {
                 return true;

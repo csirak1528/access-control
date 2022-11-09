@@ -5,8 +5,8 @@ import "./AccessControl.sol";
 import "./Operation.sol";
 
 abstract contract Filter {
-    address parentControl;
-    filterObject filters;
+    address private parentControl;
+    filterObject public filters;
 
     function validate(Operation operation) public view virtual returns (bool);
 
