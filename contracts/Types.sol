@@ -3,15 +3,31 @@
 pragma solidity ^0.8.0;
 
 struct dataObject {
-    uint256 unsigned;
-    int256 signed;
-    string str;
+    uint256 balance;
+}
+
+struct transactionAttributes{
+    address to;
+    uint256 amount;
+    uint256 timestamp;
+    address sender;
 }
 
 struct attributeObject{
-    string name;
-    int256 valueInt;
+    transactionAttributes transaction;
 }
 
-type opcode is bytes20;
+struct transactionFilter{
+    uint256 amountPerTransaction;
+    bool balanceBased;
+    uint256 balance;
+    bool sendall;
+    address[] allowedRecievers;
+}
+
+struct filterObject{
+    transactionFilter transaction;
+}
+
+type opcode is uint256;
 type contractAddress is address;
