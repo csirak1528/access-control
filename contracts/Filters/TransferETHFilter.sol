@@ -4,47 +4,46 @@ pragma solidity ^0.8.0;
 import "../Filter.sol";
 
 contract TransferETHFilter is Filter {
-    transactionFilter filters;
+    filterObject filters;
+    address parentControl;
 
-    constructor(
-        uint256 amountPerTransaction,
-        bool balanceBased,
-        uint256 balance
-    ) public {
-        filters = transactionFilter(
-            amountPerTransaction,
-            balanceBased,
-            balance
-        );
+    // constructor(address exectuor, address control) {
+    //     parentExecutor = exectuor;
+    //     parentControl = control;
+    // }
+
+    constructor(filterObject memory filter) public {
+        filters = filter;
+        parentControl = control;
     }
 
-    function onValidation() internal override {}
+    function linkUser(address user) public override {
+        if (filters.transaction.balanceBased) {
+            dataObject memory data;
+            data.balance = filters.transaction.balance;
+            AccessControl(parentControl).storeData(user, "balance", data);
+        }
+    }
 
-    function onFailure() internal override {}
-
-    function validate(Operation operation) public view returns (bool) {
-        transactionAttributes transaction = operation
-            .getAllAttributes()
-            .transaction;
-
-        if (!(filters.amountPerTransaction >= transaction.amount)) {
-            onFailure();
+    function validate(transactionAttributes transaction)
+        public
+        view
+        override
+        returns (bool)
+    {
+        transactionFilter memory mainFilter = filters.transaction;
+        if (!(mainFilter.amountPerTransaction >= transaction.amount)) {
             return false;
         }
-        for (uint256 i = 0; i < filters.allowedRecievers.length; i++) {
-            if (filters.allowedRecievers[i] == transaction.to) {
-                onValidation();
+        for (uint256 i = 0; i < mainFilter.allowedRecievers.length; i++) {
+            if (mainFilter.allowedRecievers[i] == transaction.to) {
                 return true;
             }
         }
-
-        onFailure();
         return false;
     }
 
     function getFilters() public view override returns (filterObject memory) {
-        filterObject memory temp;
-        temp.transactionFilter = filters;
-        return temp;
+        return filters;
     }
 }

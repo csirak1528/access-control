@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./AccessControl.sol";
+import "./Filter.sol";
 
 abstract contract Operation {
+    uint256 public code;
+
     function getAllAttributes()
         public
         view
