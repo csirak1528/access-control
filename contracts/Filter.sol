@@ -7,7 +7,7 @@ abstract contract Filter {
     address private parentControl;
     filterObject public filters;
 
-    function validate(transactionAttributes memory transaction) public view virtual returns (bool);
+    function validate(attributeObject memory attrs) public view virtual returns (bool);
 
     function getFilters() public view virtual returns (filterObject memory);
 

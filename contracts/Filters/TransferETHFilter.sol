@@ -26,12 +26,13 @@ contract TransferETHFilter is Filter {
         }
     }
 
-    function validate(transactionAttributes memory transaction)
+    function validate(attributeObject memory attrs)
         public
         view
         override
         returns (bool)
     {
+        transactionAttributes memory transaction = attrs.transaction;
         transactionFilter memory mainFilter = filters.transaction;
         if (!(mainFilter.amountPerTransaction >= transaction.amount)) {
             return false;

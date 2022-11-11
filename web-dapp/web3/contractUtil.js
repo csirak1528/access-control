@@ -52,26 +52,36 @@ const main = async () => {
     //     address[] allowedRecievers;
     // }
 
+    const filterSpecifications = {
 
-    const filterSpecifications = [
-        1,    //    uint256 amountPerTransaction;
-        true,  //    bool balanceBased;
-        6,     //    uint256 balance;
-        false, //    bool sendall;
-        []     //    address[] allowedRecievers;
-    ]
+        "amountPerTransaction": 1,    //    uint256 amountPerTransaction;
+        "balanceBased": true,  //    bool balanceBased;
+        "balance": 6,     //    uint256 balance;
+        "sendall": false, //    bool sendall;
+        "allowedRecievers": []     //    address[] allowedRecievers;
 
-    const contractAddressParent = await deployContract(web3, uri1, name1,)
-    const contractAddress = await deployContract(web3, uri2, name2, [filterSpecifications, contractAddressParent], root)
-    await testLoadContract(contractAddress)
+    }
+
+
+    // const filterSpecifications = [
+    //     1,    //    uint256 amountPerTransaction;
+    //     true,  //    bool balanceBased;
+    //     6,     //    uint256 balance;
+    //     false, //    bool sendall;
+    //     []     //    address[] allowedRecievers;
+    // ]
+
+    const contractAddressParent = await deployContract(uri1, name1, provider = web3)
+    const contractAddress = await deployContract(uri2, name2, [filterSpecifications, contractAddressParent], root, provider = web3)
+    // await testLoadContract(contractAddress)
 }
 
-const testLoadContract = async (filterAddr) => {
-    const name2 = "TransferETHFilter";
-    const uri2 = `../../contracts/deploy/${name2}/combined.json`
+const testLoadContract = async (filterAddr, provider = web3) => {
+    const name = "TransferETHFilter";
+    const uri = `../../contracts/deploy/${name}/combined.json`
     const root = "Filters/"
-    const abi = loadABI(name2, uri2, root)
-    const contract = new web3.eth.Contract(abi, filterAddr);
+    const abi = loadABI(name, uri, root)
+    const contract = new provider.eth.Contract(abi, filterAddr);
     console.log(await contract.methods.filters().call())
 }
 
@@ -83,6 +93,13 @@ const loadABI = (name, uri, root = "") => {
     const ABI = schema.abi;
     return ABI;
 }
-main()
 
-module.exports = { deployContract, loadABI }
+const loadExisting = async (addr, abi, provider = web3) => {
+    return new provider.eth.Contract(abi, addr);
+}
+
+// main()
+
+
+
+module.exports = { deployContract, loadABI, loadExisting }

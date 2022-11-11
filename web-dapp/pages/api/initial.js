@@ -24,7 +24,7 @@ let input = {
 var output = JSON.parse(solc.compile(JSON.stringify(input)));
 fs.writeFileSync("./out.json", JSON.stringify(output))
 
-// ABI = output.contracts["initial.sol"]["initial"].abi;
+ABI = output.contracts["initial.sol"]["initial"].abi;
 // bytecode = output.contracts["initial.sol"]["initial"].evm.bytecode.object;
 // console.log("Bytecode: ", bytecode);
 // console.log("ABI: ", ABI);
